@@ -1,5 +1,6 @@
 const webscraper = require('web-scraper-js');
 const { Client } = require('pg');
+const _ = require('lodash');
 
 const baseUrl = 'https://www.olx.ba/pretraga?vrsta=samoizdavanje&kategorija=23&kanton=15&grad%5B0%5D=1088&stranica=';
 const articleDetailsUrl = 'https://www.olx.ba/artikal/';
@@ -20,7 +21,7 @@ const tableExistsQuery = 'SELECT EXISTS(SELECT * FROM information_schema.tables 
 
 	const pages = pagesData.result.filter(Boolean);
 
-	let articles = await Promise.all(
+	let scrapedApartments = await Promise.all(
 		pages.map(async page => {
 			let result = await webscraper.scrape({
 				url: baseUrl + page,
@@ -54,16 +55,57 @@ const tableExistsQuery = 'SELECT EXISTS(SELECT * FROM information_schema.tables 
 
 	client.connect();
 
-	client
+	await  client
 		.query(tableExistsQuery)
 		.then(res => {
 				if (!res.rows[0].exists) {
-					console.log('Create database!');
+					console.log('Create apartment table!');
 					client.query(createTableQuery)
+				} else {
+					console.log('Table apartment exists!');
 				}
-				client.end()
+
 			}
 		)
 		.catch(e => console.error(e.stack));
 
+
+	const currentApartments = await getApartments(client);
+
+	const newApartments = _.xorBy(currentApartments, scrapedApartments, 'id');
+
+	console.log('scraped apartments length:', scrapedApartments.length);
+	console.log('current apartments length:', currentApartments.length);
+	console.log('new apartments length:', newApartments.length);
+	//TODO send intersection via email!
+
+	await deleteApartments(client);
+
+	await Promise.all(
+		scrapedApartments.map(async apartment => {
+			await updateApartment(client, apartment)
+		})
+	);
+
+	client.end()
+
 })();
+
+const updateApartment = async (client, apartment) => {
+	await client.query(`INSERT INTO apartments (id, name, price, link) values (\'${apartment.id}\',\'${apartment.name}\',\'${apartment.price}\',\'${apartment.link}\') ON CONFLICT (id) DO UPDATE SET name = \'${apartment.name}\', price=\'${apartment.price}\',link=\'${apartment.link}\';`).catch();
+};
+
+const getApartments = async client => {
+	return await client.query('SELECT * FROM apartments;').then(res => res.rows.map(apartment => {
+		return {
+			id: String(apartment.id),
+			name: apartment.name,
+			price: apartment.price,
+			link: apartment.link
+		}
+	})).catch();
+};
+
+const deleteApartments = async client => {
+	await client.query('TRUNCATE apartments;').catch();
+};
