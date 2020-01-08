@@ -1,4 +1,5 @@
 const webscraper = require('web-scraper-js');
+const { Pool, Client } = require('pg');
 
 const baseUrl = 'https://www.olx.ba/pretraga?vrsta=samoizdavanje&kategorija=23&kanton=15&grad%5B0%5D=1088&stranica=';
 const articleDetailsUrl = 'https://www.olx.ba/artikal/';
@@ -43,7 +44,25 @@ const articleDetailsUrl = 'https://www.olx.ba/artikal/';
 		})
 	).then(result => result.flat().filter(article => article.id))
 
-	console.log(articles.length,);
-	console.log('ARTICLES;;', articles);
+	console.log('ARTICLES:', articles);
+
+	console.log('Connecting to db!');
+
+	const client = new Client({
+		connectionString: process.env.DATABASE_URL,
+	});
+
+	client.connect();
+	client
+		.query('\'SELECT NOW() as now\'')
+		.then(res => console.log(res.rows[0]))
+		.catch(e => console.error(e))
+	client.end();
+
+	console.log('END');
+	// client.query('SELECT NOW()', (err, res) => {
+	// 	console.log(err, res)
+	// 	client.end()
+	// })
 
 })();
