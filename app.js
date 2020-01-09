@@ -57,9 +57,6 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 	client.connect();
 
-	await deleteApartments(client);
-
-
 	await client
 		.query(tableExistsQuery)
 		.then(res => {
@@ -87,7 +84,9 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 	if (newApartments.length) {
 		sendEmail(newApartments);
 	}
-	
+
+	await deleteApartments(client);
+
 	await Promise.all(
 		scrapedApartments.map(async apartment => {
 			await updateApartment(client, apartment)
