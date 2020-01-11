@@ -1,6 +1,7 @@
 const webscraper = require('web-scraper-js');
 const { Client } = require('pg');
 const sgMail = require('@sendgrid/mail');
+const _ = require('lodash');
 
 const baseUrl = 'https://www.olx.ba/pretraga?vrsta=samoizdavanje&kategorija=23&kanton=15&grad%5B0%5D=1088&stranica=';
 const articleDetailsUrl = 'https://www.olx.ba/artikal/';
@@ -74,7 +75,7 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 	const currentApartments = await getApartments(client);
 
-	const newApartments = xorBy(currentApartments, scrapedApartments, 'id');
+	const newApartments = _.xorBy(currentApartments, scrapedApartments, 'id');
 
 	console.log('scraped apartments length:', scrapedApartments.length);
 	console.log('current apartments length:', currentApartments.length);

@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "@sendgrid/mail": "^6.4.0",
+    "loadash": "^1.0.0",
     "pg": "^7.17.0",
     "web-scraper-js": "^1.1.0"
   }
