@@ -136,5 +136,13 @@ const sendEmail = (newApartments) => {
 			html: `Here is the list of new apartments: <ul>${newApartments.map(apartment => `<li>${apartment.link}</li>`)}</ul>`
 		};
 		sgMail.send(msg);
+
+		const msg = {
+			to: 'nikola.lisicic@gmail.com',
+			from: 'laogdo@gmail.com',
+			subject: 'Mr fox we found new apartments, check it out!',
+			html: `Here is the list of new apartments: <ul>${newApartments.map(apartment => `<li>${apartment.link}</li>`)}</ul>`
+		};
+		sgMail.send(msg);
 	}
 ;
