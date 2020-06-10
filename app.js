@@ -144,7 +144,7 @@ const sendEmail = (newApartments) => {
 			html: `Here is the list of new apartments: <ul>${newApartments.map(apartment => `<li>${apartment.link}</li>`)}</ul>`
 		};
 
-		sgMail.send(msg);
+		//sgMail.send(msg);
 		sgMail.send(msg2);
 	}
 ;
